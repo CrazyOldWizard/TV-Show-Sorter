@@ -1,6 +1,6 @@
 # Sort TV Shows
 
-This is a c# program that will create a folder structure based off of the name of the show, then the season number.
+This is a C# program that will create a folder structure based off of the name of the show, then the season number.
 
 ## Installation and Usage
 
