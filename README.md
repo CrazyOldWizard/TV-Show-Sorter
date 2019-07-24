@@ -4,7 +4,7 @@ This is a c# program that will create a folder structure based off of the name o
 
 ## Installation
 
-Download the .exe as well as the config.
+Download the .exe as well as the config. https://github.com/CrazyOldWizard/TV-Show-Sorter/tree/master/TV%20Show%20Sorter/bin/Release
  Change the RootDir key in the config to the root folder with the shows you would like to sort.
  Run the .exe
 
