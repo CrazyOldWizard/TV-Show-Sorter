@@ -1,4 +1,4 @@
-# Sort TV Shows
+# TV Show Sorter
 
 This is a c# program that will create a folder structure based off of the name of the show, then the season number.
 
