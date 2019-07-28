@@ -16,12 +16,47 @@ namespace TV_Show_Sorter
         public static string MovieDestinationFolder;
         public static string EnableOutFolder = ConfigurationManager.AppSettings["EnableOutFolder"].ToLower();
         public static string MoviesFolder = SearchFolder + "\\" + "Movies";
-        public static string FailedToSortFolder = SearchFolder + "\\" + "FailedToSort";
+        public static string FailedToSortFolder = SearchFolder + "\\" + ".FailedToSort";
 
         static Regex tvShow = new Regex(@"s\d\d");
         static Regex ShowNameRegex = new Regex(@".*?(?=\ss\d\d)");
         public static string seasonNumber;
         public static string showName;
+
+        public static void MsgInfo(string message)
+        {
+            //Console.Write(DateTime.Now.ToString() + "  ");
+            Console.Write("[");
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.Write("INFO");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("] ");
+            Console.Write(message);
+            Console.WriteLine();
+
+        }
+        public static void MsgStatus(string message)
+        {
+            Console.Write("[");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Status");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("] ");
+            Console.Write(message);
+            Console.WriteLine();
+
+        }
+        public static void MsgError(string message)
+        {
+            Console.Write("[");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write("Error");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("] ");
+            Console.Write(message);
+            Console.WriteLine();
+
+        }
 
         private static void SetDestinationFolder()
         {
@@ -34,21 +69,6 @@ namespace TV_Show_Sorter
             {
                 TVDestinationFolder = TVDestinationFolderConfig;
                 MovieDestinationFolder = MovieDestinationFolderConfig;
-            }
-        }
-
-        public static bool IsFileReady(string filename)
-        {
-            // If the file can be opened for exclusive access it means that the file
-            // is no longer locked by another process.
-            try
-            {
-                using (FileStream inputStream = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.None))
-                    return inputStream.Length > 0;
-            }
-            catch (Exception)
-            {
-                return false;
             }
         }
 
@@ -104,32 +124,26 @@ namespace TV_Show_Sorter
                     }
                     if (!Directory.Exists(showFolder))
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("Creating Show Folder: " + showName);
-                        Console.ForegroundColor = ConsoleColor.White;
+                        MsgStatus("Creating Show Folder: " + showName);
                         Directory.CreateDirectory(showFolder);
                     }
                     if (!Directory.Exists(seasonFolder))
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("Creating Season " + seasonNumber + " Folder for " + showName);
-                        Console.ForegroundColor = ConsoleColor.White;
+                        MsgStatus("Creating Season " + seasonNumber + " Folder for " + showName);
                         Directory.CreateDirectory(seasonFolder);
                     }
                     if (!File.Exists(newFile))
                     {
-                        Console.WriteLine(fileNoExt + " Is a TV show");
-                        if (IsFileReady(file) == true)
+                        MsgInfo(fileNoExt + " Is a TV show");
+                        try
                         {
                             File.Move(file, newFile);
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine("Moved " + filename + " to " + seasonFolder);
-                            Console.ForegroundColor = ConsoleColor.White;
+                            MsgStatus("Moved " + filename + " to " + seasonFolder);
                             continue;
                         }
-                        else
+                        catch (Exception e)
                         {
-                            Console.WriteLine(filename + " Is open by another process, skipping...");
+                            Console.WriteLine(e.ToString());
                             continue;
                         }
                     }
@@ -149,39 +163,50 @@ namespace TV_Show_Sorter
                         {
                             continue;
                         }
-                        if(!Directory.Exists(MovieDestinationFolder))
+                        if (!Directory.Exists(MovieDestinationFolder))
                         {
-                            Console.WriteLine("Movie folder doesn't exist, creating...");
+                            MsgInfo("Movie folder doesn't exist, creating...");
                             Directory.CreateDirectory(MovieDestinationFolder);
                         }
                         if (!File.Exists(newMovie))
                         {
-                            if (IsFileReady(file) == true)
+                            try
                             {
-                                Console.WriteLine(fileNoExt + " Is a movie, moving to: " + MovieDestinationFolder);
+                                MsgStatus(fileNoExt + " Is a movie, moving to: " + MovieDestinationFolder);
                                 File.Move(file, newMovie);
                                 continue;
+                            }
+                            catch (Exception e)
+                            {
+                                MsgError(e.ToString());
                             }
                         }
                     }
 
-                    else if (IsFileReady(file) == true)
+                    else
                     {
-
-                        Console.WriteLine(fileNoExt + " Doesn't match search pattern and is not long enough to be a Movie!");
-                        Console.WriteLine("Lenght of file is: " + TimeSpan.FromSeconds(clip.duration));
                         string failedSortFile = (FailedToSortFolder + "\\" + Path.GetFileName(file));
                         if (!Directory.Exists(FailedToSortFolder))
                         {
+                            MsgStatus(FailedToSortFolder + " Does not exist, creating...");
                             Directory.CreateDirectory(FailedToSortFolder);
                         }
                         if (!File.Exists(failedSortFile))
                         {
-                            File.Move(file, failedSortFile);
+                            MsgInfo(fileNoExt + " Doesn't match search pattern and is not long enough to be a Movie!");
+                            MsgInfo("Lenght of file is: " + TimeSpan.FromSeconds(clip.duration));
+                            try
+                            {
+                                File.Move(file, failedSortFile);
+                                MsgStatus("Moved: " + fileNoExt + " To: " + FailedToSortFolder);
+                            }
+                            catch (Exception e)
+                            {
+                                MsgError(e.ToString());
+                            }
                             continue;
                         }
                     }
-
                 }
             }
 
@@ -194,11 +219,11 @@ namespace TV_Show_Sorter
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine(DateTime.Now.ToString());
                 Console.ForegroundColor = ConsoleColor.White;
-                SetDestinationFolder();
-                Console.WriteLine("Searching for files...");
-                SearchFolders();
                 Console.WriteLine();
-                Console.WriteLine("Finished");
+                SetDestinationFolder();
+                MsgInfo("Searching for files...");
+                SearchFolders();
+                MsgInfo("Finished");
                 System.Threading.Thread.Sleep(5000);
                 Console.Clear();
             }
