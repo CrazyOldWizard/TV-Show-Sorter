@@ -18,8 +18,8 @@ namespace TV_Show_Sorter
         public static string MoviesFolder = SearchFolder + "\\" + "Movies";
         public static string FailedToSortFolder = SearchFolder + "\\" + ".FailedToSort";
 
-        static Regex tvShow = new Regex(@"s\d\d");
-        static Regex ShowNameRegex = new Regex(@".*?(?=\ss\d\d)");
+        static Regex tvShow = new Regex(@"s\d\d", RegexOptions.IgnoreCase);
+        static Regex ShowNameRegex = new Regex(@".*?(?=\ss\d\d)", RegexOptions.IgnoreCase);
         public static string seasonNumber;
         public static string showName;
 
