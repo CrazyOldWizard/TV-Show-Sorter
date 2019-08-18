@@ -4,6 +4,7 @@ This is a c# program that will create a folder structure based off of the name o
 
 ## Installation
 
+- Requires Windows Media Player to be installed. (uses WMPLib.dll)
 - Download the .exe as well as the config file from the release folder below. 
 - https://github.com/CrazyOldWizard/TV-Show-Sorter/tree/master/TV%20Show%20Sorter/bin/Release
 - Change the SearchFolder key in the config to the root folder with the shows you would like to sort.
