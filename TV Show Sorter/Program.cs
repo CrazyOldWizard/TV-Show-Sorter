@@ -99,7 +99,7 @@ namespace TV_Show_Sorter
         {
             foreach (string file in Directory.EnumerateFiles(SearchFolder, "*.*", SearchOption.AllDirectories))
             {
-                string fileNoExt = Path.GetFileNameWithoutExtension(file);
+                string fileNoExt = Path.GetFileNameWithoutExtension(file).Replace(".", " ");
                 Match matches = tvShow.Match(fileNoExt);
                 Match matchName = ShowNameRegex.Match(fileNoExt);
 
@@ -117,6 +117,7 @@ namespace TV_Show_Sorter
                     ShowName(ShowNameRegex, matchName);
                     string showFolder = Path.Combine(TVDestinationFolder, showName);
                     string seasonFolder = Path.Combine(showFolder, "Season " + seasonNumber);
+                    string fileExt = Path.GetExtension(file);
                     string newFile = (seasonFolder + "\\" + filename);
                     if (File.Exists(newFile))
                     {
