@@ -62,13 +62,25 @@ namespace TV_Show_Sorter
         {
             if (EnableOutFolder == "false")
             {
-                TVDestinationFolder = SearchFolder;
-                MovieDestinationFolder = MoviesFolder;
+                if(TVDestinationFolder != SearchFolder)
+                {
+                    TVDestinationFolder = SearchFolder;
+                }
+                if(MovieDestinationFolder != MoviesFolder)
+                {
+                    MovieDestinationFolder = MoviesFolder;
+                }
             }
             else if (EnableOutFolder == "true")
             {
-                TVDestinationFolder = TVDestinationFolderConfig;
-                MovieDestinationFolder = MovieDestinationFolderConfig;
+                if(TVDestinationFolder != TVDestinationFolderConfig)
+                {
+                    TVDestinationFolder = TVDestinationFolderConfig;
+                }
+                if(MovieDestinationFolder != MovieDestinationFolderConfig)
+                {
+                    MovieDestinationFolder = MovieDestinationFolderConfig;
+                }
             }
         }
 
@@ -99,6 +111,10 @@ namespace TV_Show_Sorter
         {
             foreach (string file in Directory.EnumerateFiles(SearchFolder, "*.*", SearchOption.AllDirectories))
             {
+                if(Path.GetDirectoryName(file) == FailedToSortFolder)
+                {
+                    continue;
+                }
                 string fileNoExt = Path.GetFileNameWithoutExtension(file).Replace(".", " ");
                 Match matches = tvShow.Match(fileNoExt);
                 Match matchName = ShowNameRegex.Match(fileNoExt);
@@ -138,6 +154,7 @@ namespace TV_Show_Sorter
                         MsgInfo(fileNoExt + " Is a TV show");
                         try
                         {
+                            MsgStatus("Moving " + filename + " to " + seasonFolder);
                             File.Move(file, newFile);
                             MsgStatus("Moved " + filename + " to " + seasonFolder);
                             continue;
@@ -215,13 +232,14 @@ namespace TV_Show_Sorter
 
         static void Main()
         {
+            SetDestinationFolder();
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine(DateTime.Now.ToString());
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine();
-                SetDestinationFolder();
+                
                 MsgInfo("Searching for files...");
                 SearchFolders();
                 MsgInfo("Finished");
