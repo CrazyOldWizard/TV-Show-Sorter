@@ -161,7 +161,7 @@ namespace TV_Show_Sorter
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine(e.ToString());
+                            MsgError(e.Message);
                             continue;
                         }
                     }
@@ -196,7 +196,7 @@ namespace TV_Show_Sorter
                             }
                             catch (Exception e)
                             {
-                                MsgError(e.ToString());
+                                MsgError(e.Message);
                             }
                         }
                     }
@@ -220,7 +220,7 @@ namespace TV_Show_Sorter
                             }
                             catch (Exception e)
                             {
-                                MsgError(e.ToString());
+                                MsgError(e.Message);
                             }
                             continue;
                         }
