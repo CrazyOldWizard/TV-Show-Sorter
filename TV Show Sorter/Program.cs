@@ -8,9 +8,6 @@ namespace TV_Show_Sorter
 {
     class Program
     {
-
-        //new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(sourceDir, destDir, overwrite);
-
         public static string SearchFolder = ConfigurationManager.AppSettings["SearchFolder"];
         public static string TVDestinationFolderConfig = ConfigurationManager.AppSettings["TVDestinationFolder"];
         public static string MovieDestinationFolderConfig = ConfigurationManager.AppSettings["MovieDestinationFolder"];
@@ -266,9 +263,9 @@ namespace TV_Show_Sorter
                         MsgInfo(folderNameOnly + " Is a TV show");
                         try
                         {
-                            MsgStatus("Merging " + folderName + " with " + seasonFolder);
+                            MsgStatus($"Merging {folderName} with {seasonFolder}");
                             new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(folder, newFolder, true);
-                            MsgStatus("Merged " + folderName + " with " + seasonFolder);
+                            MsgStatus($"Merged { folderName} with { seasonFolder}");
                             continue;
                         }
                         catch (Exception e)
