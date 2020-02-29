@@ -235,7 +235,7 @@ namespace TV_Show_Sorter
 
         private static void SortFolders()
         {
-            foreach (string folder in Directory.EnumerateFiles(SearchFolder, "*.*", SearchOption.AllDirectories))
+            foreach (string folder in Directory.EnumerateDirectories(SearchFolder, "*.*", SearchOption.AllDirectories))
             {
                 if (Path.GetDirectoryName(folder) == FailedToSortFolder)
                 {
@@ -263,7 +263,19 @@ namespace TV_Show_Sorter
                     string newFolder = Path.Combine(seasonFolder, folderName);
                     if (Directory.Exists(newFolder))
                     {
-                        continue;
+                        MsgInfo(folderNameOnly + " Is a TV show");
+                        try
+                        {
+                            MsgStatus("Merging " + folderName + " with " + seasonFolder);
+                            new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(folder, newFolder, true);
+                            MsgStatus("Merged " + folderName + " with " + seasonFolder);
+                            continue;
+                        }
+                        catch (Exception e)
+                        {
+                            MsgError(e.Message);
+                            continue;
+                        }
                     }
                     if (!Directory.Exists(showFolder))
                     {
