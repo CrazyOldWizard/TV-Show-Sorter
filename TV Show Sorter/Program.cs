@@ -9,14 +9,16 @@ namespace TV_Show_Sorter
     class Program
     {
 
+        //new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(sourceDir, destDir, overwrite);
+
         public static string SearchFolder = ConfigurationManager.AppSettings["SearchFolder"];
         public static string TVDestinationFolderConfig = ConfigurationManager.AppSettings["TVDestinationFolder"];
         public static string MovieDestinationFolderConfig = ConfigurationManager.AppSettings["MovieDestinationFolder"];
         public static string TVDestinationFolder;
         public static string MovieDestinationFolder;
         public static string EnableOutFolder = ConfigurationManager.AppSettings["EnableOutFolder"].ToLower();
-        public static string MoviesFolder = SearchFolder + "\\" + "Movies";
-        public static string FailedToSortFolder = SearchFolder + "\\" + ".FailedToSort";
+        public static string MoviesFolder = Path.Combine(SearchFolder, "Movies");
+        public static string FailedToSortFolder = Path.Combine(SearchFolder, ".FailedToSort");
         public static bool SortFoldersInstead = bool.Parse(ConfigurationManager.AppSettings["SortFoldersInstead"].ToLower());
 
         static Regex tvShow = new Regex(@"s\d\d", RegexOptions.IgnoreCase);
@@ -258,7 +260,7 @@ namespace TV_Show_Sorter
                     ShowName(ShowNameRegex, matchName);
                     string showFolder = Path.Combine(TVDestinationFolder, showName);
                     string seasonFolder = Path.Combine(showFolder, "Season " + seasonNumber);
-                    string newFolder = (seasonFolder + "\\" + folderName);
+                    string newFolder = Path.Combine(seasonFolder, folderName);
                     if (Directory.Exists(newFolder))
                     {
                         continue;
@@ -279,7 +281,7 @@ namespace TV_Show_Sorter
                         try
                         {
                             MsgStatus("Moving " + folderName + " to " + seasonFolder);
-                            Directory.Move(folder, newFolder);
+                            new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(folder, newFolder, true);
                             MsgStatus("Moved " + folderName + " to " + seasonFolder);
                             continue;
                         }
@@ -299,7 +301,7 @@ namespace TV_Show_Sorter
                     if (length >= 4200)
                     {
                         string movieName = folderNameOnly;
-                        string newMovie = Path.Combine(MovieDestinationFolder + "\\" + movieName);
+                        string newMovie = Path.Combine(MovieDestinationFolder, movieName);
 
                         if (Directory.Exists(newMovie))
                         {
@@ -315,7 +317,7 @@ namespace TV_Show_Sorter
                             try
                             {
                                 MsgStatus(folderNameOnly + " Is a movie, moving to: " + MovieDestinationFolder);
-                                Directory.Move(folder, newMovie);
+                                new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(folder, newMovie, true);
                                 continue;
                             }
                             catch (Exception e)
@@ -327,7 +329,7 @@ namespace TV_Show_Sorter
 
                     else
                     {
-                        string failedSortFile = (FailedToSortFolder + "\\" + folderNameOnly);
+                        string failedSortFile = Path.Combine(FailedToSortFolder, folderNameOnly);
                         if (!Directory.Exists(FailedToSortFolder))
                         {
                             MsgStatus(FailedToSortFolder + " Does not exist, creating...");
@@ -339,7 +341,7 @@ namespace TV_Show_Sorter
                             MsgInfo("Lenght of file is: " + TimeSpan.FromSeconds(clip.duration));
                             try
                             {
-                                Directory.Move(folder, failedSortFile);
+                                new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(folder, failedSortFile, true);
                                 MsgStatus("Moved: " + folderNameOnly + " To: " + FailedToSortFolder);
                             }
                             catch (Exception e)
