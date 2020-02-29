@@ -8,15 +8,15 @@ namespace TV_Show_Sorter
 {
     class Program
     {
-
         public static string SearchFolder = ConfigurationManager.AppSettings["SearchFolder"];
         public static string TVDestinationFolderConfig = ConfigurationManager.AppSettings["TVDestinationFolder"];
         public static string MovieDestinationFolderConfig = ConfigurationManager.AppSettings["MovieDestinationFolder"];
         public static string TVDestinationFolder;
         public static string MovieDestinationFolder;
         public static string EnableOutFolder = ConfigurationManager.AppSettings["EnableOutFolder"].ToLower();
-        public static string MoviesFolder = SearchFolder + "\\" + "Movies";
-        public static string FailedToSortFolder = SearchFolder + "\\" + ".FailedToSort";
+        public static string MoviesFolder = Path.Combine(SearchFolder, "Movies");
+        public static string FailedToSortFolder = Path.Combine(SearchFolder, ".FailedToSort");
+        public static bool SortFoldersInstead = bool.Parse(ConfigurationManager.AppSettings["SortFoldersInstead"].ToLower());
 
         static Regex tvShow = new Regex(@"s\d\d", RegexOptions.IgnoreCase);
         static Regex ShowNameRegex = new Regex(@".*?(?=\ss\d\d)", RegexOptions.IgnoreCase);
@@ -107,7 +107,7 @@ namespace TV_Show_Sorter
             return null;
         }
 
-        private static void SearchFolders()
+        private static void SortFiles()
         {
             foreach (string file in Directory.EnumerateFiles(SearchFolder, "*.*", SearchOption.AllDirectories))
             {
@@ -230,6 +230,141 @@ namespace TV_Show_Sorter
 
         }
 
+        private static void SortFolders()
+        {
+            foreach (string folder in Directory.EnumerateDirectories(SearchFolder, "*.*", SearchOption.AllDirectories))
+            {
+                if (Path.GetDirectoryName(folder) == FailedToSortFolder)
+                {
+                    continue;
+                }
+                var dInfo = new DirectoryInfo(folder);
+                string folderNameOnly = dInfo.Name.Replace(".", " ");
+                Match matches = tvShow.Match(folderNameOnly);
+                Match matchName = ShowNameRegex.Match(folderNameOnly);
+
+                var attributes = dInfo.Attributes;
+                if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    continue;
+                }
+
+                if (tvShow.IsMatch(folderNameOnly))
+                {
+                    string showName = ShowNameRegex.Match(folderNameOnly).ToString();
+                    string folderName = folderNameOnly;
+                    ShowMatches(tvShow, matches);
+                    ShowName(ShowNameRegex, matchName);
+                    string showFolder = Path.Combine(TVDestinationFolder, showName);
+                    string seasonFolder = Path.Combine(showFolder, "Season " + seasonNumber);
+                    string newFolder = Path.Combine(seasonFolder, folderName);
+                    if (Directory.Exists(newFolder))
+                    {
+                        MsgInfo(folderNameOnly + " Is a TV show");
+                        try
+                        {
+                            MsgStatus($"Merging {folderName} with {seasonFolder}");
+                            new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(folder, newFolder, true);
+                            MsgStatus($"Merged { folderName} with { seasonFolder}");
+                            continue;
+                        }
+                        catch (Exception e)
+                        {
+                            MsgError(e.Message);
+                            continue;
+                        }
+                    }
+                    if (!Directory.Exists(showFolder))
+                    {
+                        MsgStatus("Creating Show Folder: " + showName);
+                        Directory.CreateDirectory(showFolder);
+                    }
+                    if (!Directory.Exists(seasonFolder))
+                    {
+                        MsgStatus("Creating Season " + seasonNumber + " Folder for " + showName);
+                        Directory.CreateDirectory(seasonFolder);
+                    }
+                    if (!Directory.Exists(newFolder))
+                    {
+                        MsgInfo(folderNameOnly + " Is a TV show");
+                        try
+                        {
+                            MsgStatus("Moving " + folderName + " to " + seasonFolder);
+                            new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(folder, newFolder, true);
+                            MsgStatus("Moved " + folderName + " to " + seasonFolder);
+                            continue;
+                        }
+                        catch (Exception e)
+                        {
+                            MsgError(e.Message);
+                            continue;
+                        }
+                    }
+                }
+                else
+                {
+                    var player = new WindowsMediaPlayer();
+                    var clip = player.newMedia(folder);
+                    var length = clip.duration;
+
+                    if (length >= 4200)
+                    {
+                        string movieName = folderNameOnly;
+                        string newMovie = Path.Combine(MovieDestinationFolder, movieName);
+
+                        if (Directory.Exists(newMovie))
+                        {
+                            continue;
+                        }
+                        if (!Directory.Exists(MovieDestinationFolder))
+                        {
+                            MsgInfo("Movie folder doesn't exist, creating...");
+                            Directory.CreateDirectory(MovieDestinationFolder);
+                        }
+                        if (!Directory.Exists(newMovie))
+                        {
+                            try
+                            {
+                                MsgStatus(folderNameOnly + " Is a movie, moving to: " + MovieDestinationFolder);
+                                new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(folder, newMovie, true);
+                                continue;
+                            }
+                            catch (Exception e)
+                            {
+                                MsgError(e.Message);
+                            }
+                        }
+                    }
+
+                    else
+                    {
+                        string failedSortFile = Path.Combine(FailedToSortFolder, folderNameOnly);
+                        if (!Directory.Exists(FailedToSortFolder))
+                        {
+                            MsgStatus(FailedToSortFolder + " Does not exist, creating...");
+                            Directory.CreateDirectory(FailedToSortFolder);
+                        }
+                        if (!Directory.Exists(failedSortFile))
+                        {
+                            MsgInfo(folderNameOnly + " Doesn't match search pattern and is not long enough to be a Movie!");
+                            MsgInfo("Lenght of file is: " + TimeSpan.FromSeconds(clip.duration));
+                            try
+                            {
+                                new Microsoft.VisualBasic.Devices.Computer().FileSystem.MoveDirectory(folder, failedSortFile, true);
+                                MsgStatus("Moved: " + folderNameOnly + " To: " + FailedToSortFolder);
+                            }
+                            catch (Exception e)
+                            {
+                                MsgError(e.Message);
+                            }
+                            continue;
+                        }
+                    }
+                }
+            }
+
+        }
+
         static void Main()
         {
             SetDestinationFolder();
@@ -241,7 +376,15 @@ namespace TV_Show_Sorter
                 Console.WriteLine();
                 
                 MsgInfo("Searching for files...");
-                SearchFolders();
+                if(SortFoldersInstead == true)
+                {
+                    SortFolders();
+                }
+                else
+                {
+                    SortFiles();
+                }
+                
                 MsgInfo("Finished");
                 System.Threading.Thread.Sleep(5000);
                 Console.Clear();
