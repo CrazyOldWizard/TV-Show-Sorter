@@ -12,7 +12,7 @@ This is a c# program that will create a folder structure based off of the name o
 - Run the .exe
 
 ## Usage
-This tool would sort the following episodes in the root directory...
+This tool would sort the following episodes in the root directory... (*This also will sort folders if named in the same format)
 ~~~
 └───TV_Shows
         Breaking Bad s01e01.mkv
