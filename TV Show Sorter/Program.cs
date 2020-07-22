@@ -127,6 +127,7 @@ namespace TV_Show_Sorter
 
                 if (tvShow.IsMatch(fileNoExt))
                 {
+                    var cleaning = new Cleaning();
                     string showName = ShowNameRegex.Match(fileNoExt).ToString();
                     string filename = Path.GetFileName(file);
                     ShowMatches(tvShow, matches);
@@ -134,7 +135,7 @@ namespace TV_Show_Sorter
                     string showFolder = Path.Combine(TVDestinationFolder, showName);
                     string seasonFolder = Path.Combine(showFolder, "Season " + seasonNumber);
                     string fileExt = Path.GetExtension(file);
-                    string newFile = (seasonFolder + "\\" + filename);
+                    string newFile = (seasonFolder + "\\" + cleaning.CleanName(fileNoExt) + fileExt);
                     if (File.Exists(newFile))
                     {
                         continue;
@@ -364,6 +365,8 @@ namespace TV_Show_Sorter
             }
 
         }
+
+
 
         static void Main()
         {
